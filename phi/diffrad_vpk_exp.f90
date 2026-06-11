@@ -165,6 +165,7 @@
 
       real*8 k1(4),k2(4),ptar(4),ph(4),pp(4),kgam(4),pip(4),pim(4)
       integer*4 iy
+      integer*8 ntry, maxtry
       character(len=256) :: input_file, lund_file, stat_file, vdist_file
       character(len=256) :: cl_arg
       integer :: narg_tot, iarg_cur, llen
@@ -400,8 +401,8 @@
         ntry = ntry + 1
 !       Attempt limit: large for J/psi (low efficiency near threshold),
 !       moderate for rho/phi/omega
-        maxtry = 1000*nev
-        if(ivec.eq.4) maxtry = 100000*nev
+        maxtry = 1000_8*nev
+        if(ivec.eq.4) maxtry = 100000_8*nev
         if(ntry .gt. maxtry) then
           write(*,*) 'ERROR: too many attempts'
           goto 999
@@ -680,18 +681,18 @@
       write(*,'(a,i8)') ' sig_total  fail  : ',nf_sigtot
       write(*,'(a)') '=================================='
       write(*,'(a)') '====== Generator Statistics ======'
-      anorm = 1d0/max(1,ntry)
+      anorm = 1d0/max(1_8,ntry)
 !     With accept/reject: sigma = wmax * efficiency (using nphys, not ngen)
-      axsec = wmax * dble(nphys)/max(1,ntry)
+      axsec = wmax * dble(nphys)/max(1_8,ntry)
       axsec_err = axsec/sqrt(dble(max(1,nphys)))
       write(*,'(a)') '====== Cross Section ======'
       write(*,'(a,g12.4,a)') ' sigma_Born   = ',axsec,' nb'
       write(*,'(a,g12.4,a)') ' stat error   = ',axsec_err,' nb'
-      write(*,'(a,g12.4)')   ' efficiency   = ',dble(nphys)/max(1,ntry)
+      write(*,'(a,g12.4)')   ' efficiency   = ',dble(nphys)/max(1_8,ntry)
       write(*,'(a)') '=================================='
       write(*,'(a,i8)') ' Events written   : ',ngen
       write(*,'(a,i8)') ' Events physics   : ',nphys
-      write(*,'(a,i8)') ' Total attempts   : ',ntry
+      write(*,'(a,i12)') ' Total attempts   : ',ntry
       write(*,'(a,i8)') ' Non-radiated     : ',nsoft
       write(*,'(a,i8)') ' Hard radiated    : ',nhard
       write(*,'(a,i8)') '   ISR events     : ',nisr
