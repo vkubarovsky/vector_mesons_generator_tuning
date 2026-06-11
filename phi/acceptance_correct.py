@@ -203,7 +203,10 @@ def process_dataset(dataset):
     print(f"  Loaded N(φ) from {mkk_json.name}")
 
     # ─── Load or build MC arrays ────────────────────────────────
-    npz_path = out_dir / "mc_arrays.npz"
+    # npz caches are large (~700 MB) — keep them in the Downloads mirror, not the repo
+    cache_dir = Path.home() / "Downloads/volatile/clas12/vpk/fastmc/phi_tuning_cache" / dataset
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    npz_path = cache_dir / "mc_arrays.npz"
     if npz_path.exists():
         print(f"  Loading cached MC: {npz_path.name}")
         t0 = time.time()
