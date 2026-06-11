@@ -1,5 +1,7 @@
 !==============================================================
-!     diffrad_gen.f  -- version 2.0 (fully fixed)
+!     diffrad_vm.f90 -- combined vector meson generator
+!     phi (ivec=3, exp t-form) + J/psi (ivec=4, dipole t-form)
+!     with TUNED defaults (June 2026); parameters via input file
 !
 !     MC Generator for diffractive vector meson electroproduction
 !     with QED radiative corrections (collinear approximation)
@@ -23,7 +25,7 @@
       module input_mod
       implicit none
 
-      integer, parameter :: npars = 28
+      integer, parameter :: npars = 29
 
       type param_t
         character(len=32) :: name
@@ -161,7 +163,9 @@
       common/amf2/taa,atm(8,6),sfm0(8)
       common/sigsig/sigmat0,sigmal0
       common/pri/ipri
+      common/phimodel/phi_alf1,phi_alf2,phi_alf3,phi_nuT,phi_bt,phi_cR
       common/jpsimodel/pj_alf1,pj_alf2,pj_alf3,pj_nuT,pj_mg2,pj_cR
+      real*8 pj_alf1,pj_alf2,pj_alf3,pj_nuT,pj_mg2,pj_cR
 
       real*8 k1(4),k2(4),ptar(4),ph(4),pp(4),kgam(4),pip(4),pim(4)
       integer*4 iy
@@ -213,16 +217,22 @@
       pars(20) = param_t('theta_hplus',      1,2, 0d0,180d0,0, 0d0, 180d0, .false.)
       pars(21) = param_t('momentum_hminus',  1,2, 0d0,1d4,0, 0d0, 1d4, .false.)
       pars(22) = param_t('theta_hminus',     1,2, 0d0,180d0,0, 0d0, 180d0, .false.)
-!     --- J/psi cross-section model parameters (optional, have defaults) ---
-!     dsig/dt = alf1*(1-W2th/W2)^alf2 * W^alf3 / (1+Q2/m2jp)^nuT
-!               * 3*(mg2-tmin)^3/(mg2-t)^4          (dipole t-form)
-!     sigma_L = cR * Q2/m2jp * sigma_T
+!     --- Cross-section model parameters (optional, have defaults) ---
+!     Defaults are the TUNED values (June 2026):
+!       phi  (ivec=3, exponential t):  alf2=-1.245 alf3=0.762 nuT=2.344
+!                                      bt=1.284  cR=1.0
+!       jpsi (ivec=4, dipole t):       alf2=4.128  alf3=0.32  nuT=3.0
+!                                      mg2=3.170 cR=0.4
+!     Table defaults below are the PHI values; for ivec=4 any parameter
+!     not set in the input file is replaced by the J/psi default in code.
       pars(23) = param_t('alf1',  1,1, 400d0,0d0, 0,  0d0, 1d6,  .false.)
-      pars(24) = param_t('alf2',  1,1, 4.128d0,0d0,0, -50d0, 50d0, .false.)
-      pars(25) = param_t('alf3',  1,1, 0.320d0,0d0,0, -50d0, 50d0, .false.)
-      pars(26) = param_t('nuT',   1,1, 3.000d0,0d0,0,  0d0, 50d0, .false.)
-      pars(27) = param_t('mg2',   1,1, 3.170d0,0d0,0, 0.1d0,100d0, .false.)
-      pars(28) = param_t('cR',    1,1, 0.400d0,0d0,0,  0d0, 50d0, .false.)
+      pars(24) = param_t('alf2',  1,1,-1.245d0,0d0,0, -50d0, 50d0, .false.)
+      pars(25) = param_t('alf3',  1,1, 0.762d0,0d0,0, -50d0, 50d0, .false.)
+      pars(26) = param_t('nuT',   1,1, 2.344d0,0d0,0,  0d0, 50d0, .false.)
+      pars(27) = param_t('bt',    1,1, 1.284d0,0d0,0,  0d0,100d0, .false.)
+      pars(28) = param_t('cR',    1,1, 1.000d0,0d0,0,  0d0, 50d0, .false.)
+!     --- J/psi only: dipole mass^2 (tuned 2026-06) ---
+      pars(29) = param_t('mg2',   1,1, 3.170d0,0d0,0, 0.1d0,100d0, .false.)
 
 !     Read, validate, print
       call read_input(trim(input_file), pars, npars)
@@ -307,20 +317,42 @@
         write(*,'(a,f8.3,a,f8.3,a)') '   th_h- = [',thhm_min,' ,',thhm_max,' ] deg'
       endif
 
-!     --- J/psi model parameters (use defaults if not set in input) ---
-      pj_alf1 = pars(23)%rval
-      pj_alf2 = pars(24)%rval
-      pj_alf3 = pars(25)%rval
-      pj_nuT  = pars(26)%rval
-      pj_mg2  = pars(27)%rval
-      pj_cR   = pars(28)%rval
-      write(*,'(a)')       ' J/psi model parameters:'
-      write(*,'(a,f12.4)') '   alf1 = ', pj_alf1
-      write(*,'(a,f12.4)') '   alf2 = ', pj_alf2
-      write(*,'(a,f12.4)') '   alf3 = ', pj_alf3
-      write(*,'(a,f12.4)') '   nuT  = ', pj_nuT
-      write(*,'(a,f12.4)') '   mg2  = ', pj_mg2
-      write(*,'(a,f12.4)') '   cR   = ', pj_cR
+!     --- phi model parameters (table defaults = tuned phi values) ---
+      phi_alf1 = pars(23)%rval
+      phi_alf2 = pars(24)%rval
+      phi_alf3 = pars(25)%rval
+      phi_nuT  = pars(26)%rval
+      phi_bt   = pars(27)%rval
+      phi_cR   = pars(28)%rval
+!     --- J/psi model parameters: input value if set, else tuned default ---
+      pj_alf1 = 400.d0
+      if(pars(23)%is_set) pj_alf1 = pars(23)%rval
+      pj_alf2 = 4.128d0
+      if(pars(24)%is_set) pj_alf2 = pars(24)%rval
+      pj_alf3 = 0.320d0
+      if(pars(25)%is_set) pj_alf3 = pars(25)%rval
+      pj_nuT  = 3.000d0
+      if(pars(26)%is_set) pj_nuT  = pars(26)%rval
+      pj_cR   = 0.400d0
+      if(pars(28)%is_set) pj_cR   = pars(28)%rval
+      pj_mg2  = pars(29)%rval
+      if(ivec.eq.4) then
+        write(*,'(a)')       ' J/psi model parameters (dipole t):'
+        write(*,'(a,f12.4)') '   alf1 = ', pj_alf1
+        write(*,'(a,f12.4)') '   alf2 = ', pj_alf2
+        write(*,'(a,f12.4)') '   alf3 = ', pj_alf3
+        write(*,'(a,f12.4)') '   nuT  = ', pj_nuT
+        write(*,'(a,f12.4)') '   mg2  = ', pj_mg2
+        write(*,'(a,f12.4)') '   cR   = ', pj_cR
+      else
+        write(*,'(a)')       ' Phi model parameters (exp t):'
+        write(*,'(a,f12.4)') '   alf1 = ', phi_alf1
+        write(*,'(a,f12.4)') '   alf2 = ', phi_alf2
+        write(*,'(a,f12.4)') '   alf3 = ', phi_alf3
+        write(*,'(a,f12.4)') '   nuT  = ', phi_nuT
+        write(*,'(a,f12.4)') '   bt   = ', phi_bt
+        write(*,'(a,f12.4)') '   cR   = ', phi_cR
+      endif
 
       call setcon(ivec,lepton)
       s = 2d0*(sqrt(tmom**2+amp**2)*sqrt(bmom**2+aml2)+bmom*tmom)
