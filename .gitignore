@@ -1,0 +1,25 @@
+# Large regenerable artifacts
+*.npz
+*.lund
+*.exe
+*.mod
+fort.*
+
+# Python
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+
+# LaTeX intermediates (keep .tex and final .pdf)
+**/tex/*.aux
+**/tex/*.out
+**/tex/*.toc
+**/tex/plots/
+
+# macOS
+.DS_Store
+
+# Per-run plots are large; the final report PDF carries them
+**/runs/*/*.png

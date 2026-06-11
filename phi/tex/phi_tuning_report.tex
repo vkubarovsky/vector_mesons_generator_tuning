@@ -1,0 +1,468 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{hyperref}
+\usepackage{float}
+
+\title{Diffractive $\phi$ Meson Electroproduction at CLAS12:\\
+Monte Carlo Tuning with Neural Network Fast Simulation}
+\author{V.~Kubarovsky}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We present results of Monte Carlo generator tuning for diffractive $\phi$ meson
+electroproduction at CLAS12. The cross-section model parameters are determined
+by fitting acceptance-corrected experimental yields in bins of $Q^2$, $|t|$, and $W$.
+Five CLAS12 datasets (RGA Fall 2018 inbending/outbending, RGA Spring 2018
+inbending/outbending, RGA Spring 2019 inbending) are analyzed using a neural
+network-based fast Monte Carlo simulation for detector acceptance.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+%% ==================================================================
+\section{Cross-Section Model}
+\label{sec:model}
+
+The differential cross section for exclusive $\phi$ meson electroproduction
+$ep \to ep\phi$, $\phi \to K^+K^-$ is parametrized as:
+\begin{equation}
+\frac{d\sigma}{dt} = \frac{d\sigma_T}{dt} + \varepsilon\,\frac{d\sigma_L}{dt}
+\end{equation}
+where $\varepsilon$ is the virtual photon polarization parameter.
+
+\subsection{Transverse Cross Section}
+The transverse cross section is:
+\begin{equation}
+\frac{d\sigma_T}{dt} = \sigma_T(W,Q^2) \cdot b_t \cdot e^{b_t \cdot t}
+\end{equation}
+with
+\begin{equation}
+\sigma_T(W,Q^2) = \alpha_1 \left(1 - \frac{W_{\rm th}^2}{W^2}\right)^{\alpha_2}
+W^{\alpha_3} \left(1 + \frac{Q^2}{m_\phi^2}\right)^{-\nu_T}
+\end{equation}
+where $W_{\rm th} = M_N + m_\phi = 1.96$~GeV is the production threshold,
+$m_\phi = 1.019412$~GeV, and $M_N = 0.938272$~GeV.
+
+\subsection{Longitudinal Cross Section}
+The longitudinal cross section is related to the transverse via:
+\begin{equation}
+\frac{d\sigma_L}{dt} = c_R \cdot \frac{Q^2}{m_\phi^2} \cdot \frac{d\sigma_T}{dt}
+\end{equation}
+
+\subsection{Model Parameters}
+The free parameters of the model are:
+\begin{itemize}
+\item $\alpha_1$ --- overall normalization [nb]
+\item $\alpha_2$ --- threshold exponent: $(1 - W_{\rm th}^2/W^2)^{\alpha_2}$
+\item $\alpha_3$ --- $W$ power law: $W^{\alpha_3}$
+\item $b_t$ --- $t$-slope [GeV$^{-2}$]: $b_t \cdot e^{b_t \cdot t}$
+\item $\nu_T$ --- $Q^2$ suppression power: $(1 + Q^2/m_\phi^2)^{-\nu_T}$
+\item $c_R$ --- $\sigma_L/\sigma_T$ ratio coefficient (fixed to 1.0)
+\end{itemize}
+
+%% ==================================================================
+\section{Monte Carlo Generator}
+\label{sec:generator}
+
+The Monte Carlo generator \texttt{diffrad\_gen\_exp} is based on the DIFFRAD code
+by I.~Akushevich (1998) for diffractive vector meson electroproduction with QED
+radiative corrections in the collinear approximation.
+
+Events are generated in the kinematic space $(Q^2, y, t, \phi_h)$ using an
+accept-reject method. The proposal distribution uses an exponential $t$-slope
+for efficient sampling. The cross-section model parameters ($\alpha_1$, $\alpha_2$,
+$\alpha_3$, $\nu_T$, $b_t$, $c_R$) are read from the input file, allowing
+iteration without recompilation.
+
+The generation parameters used for this iteration are:
+\begin{center}
+\begin{tabular}{lcl}
+\toprule
+Parameter & Value & Description \\
+\midrule
+$\alpha_2$ & $-1.259$ & Threshold exponent \\
+$\alpha_3$ & $0.697$ & $W$ power law \\
+$b_t$      & $1.313$ & $t$-slope [GeV$^{-2}$] \\
+$\nu_T$    & $2.306$ & $Q^2$ suppression power \\
+$c_R$      & $1.000$ & $\sigma_L/\sigma_T$ ratio (fixed) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The event statistics per dataset:
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+Dataset & $E_{\rm beam}$ [GeV] & $N_{\rm gen}$ & $Q^2$ range [GeV$^2$] \\
+\midrule
+Fall18 inb & 10.6 & 10M & [0.5, 7.0] \\
+Fall18 outb & 10.6 & 5M & [0.5, 7.0] \\
+Sp18 inb & 10.6 & 10M & [0.5, 7.0] \\
+Sp18 outb & 10.6 & 5M & [0.5, 7.0] \\
+Sp19 inb & 10.2 & 10M & [0.5, 7.0] \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The output is in LUND format with 7 particles per event:
+beam $e^-$, target $p$, scattered $e^-$, $K^+$, $K^-$, recoil $p$, and
+(for radiative events) a hard photon.
+
+%% ==================================================================
+\section{Neural Network Fast Monte Carlo}
+\label{sec:fastmc}
+
+Full GEANT4-based CLAS12 simulation and reconstruction is computationally
+expensive. We use a neural network (NN) based fast Monte Carlo that provides:
+\begin{itemize}
+\item Acceptance probability: whether a particle with given $(p, \theta, \phi, v_z)$
+      would be detected
+\item Momentum smearing: realistic resolution effects
+\end{itemize}
+
+Separate NN models are trained for each particle species ($e^-$, $p$, $K^+$, $K^-$)
+and each dataset configuration (beam energy, torus polarity). An event is
+accepted if all four final-state particles ($e^-$, $p$, $K^+$, $K^-$) pass
+their respective acceptance models.
+
+Typical overall acceptance (all 4 particles detected) is 5--10\%, dominated
+by the $K^-$ acceptance at backward angles.
+
+
+\clearpage
+%% ==================================================================
+\section{$M(K^+K^-)$ Signal Extraction}
+\label{sec:mkk}
+
+The $\phi$ meson yield $N(\phi)$ is extracted in each kinematic bin by fitting
+the $K^+K^-$ invariant mass distribution $M(K^+K^-)$ with:
+\begin{equation}
+f(M) = A \cdot G(M;\, \mu_\phi, \sigma) \;+\; B\,(M - M_{\rm th})^n\, e^{-b\,M}
+\end{equation}
+where:
+\begin{itemize}
+\item $G(M;\, \mu_\phi, \sigma)$ is a Gaussian with fixed $\mu_\phi = 1019.5$~MeV
+      and fixed $\sigma = 4.7$~MeV
+\item $M_{\rm th} = 2 m_K = 987.354$~MeV is the $K^+K^-$ threshold
+\item $A$, $B$, $n$, $b$ are free fit parameters
+\end{itemize}
+
+The signal yield is $N(\phi) = A \cdot \sigma \sqrt{2\pi} / \Delta M_{\rm bin}$.
+Binning is performed in $Q^2$, $|t|$, $x_B$, and $W$ with 5 bins per variable.
+
+\subsection{$M(K^+K^-)$ Fit Results}
+
+\subsubsection*{RGA Fall 2018, inbending}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgafall18_inb_fit_mkk_vs_q2.png}
+\caption{$M(K^+K^-)$ fits in bins of $Q^2$ for RGA Fall 2018, inbending.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgafall18_inb_fit_mkk_vs_t.png}
+\caption{$M(K^+K^-)$ fits in bins of $|t|$ for RGA Fall 2018, inbending.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgafall18_inb_fit_mkk_vs_xb.png}
+\caption{$M(K^+K^-)$ fits in bins of $x_B$ for RGA Fall 2018, inbending.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgafall18_inb_fit_mkk_vs_w.png}
+\caption{$M(K^+K^-)$ fits in bins of $W$ for RGA Fall 2018, inbending.}
+\end{figure}
+
+\clearpage
+
+\subsubsection*{RGA Fall 2018, outbending}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgafall18_outb_fit_mkk_vs_q2.png}
+\caption{$M(K^+K^-)$ fits in bins of $Q^2$ for RGA Fall 2018, outbending.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgafall18_outb_fit_mkk_vs_t.png}
+\caption{$M(K^+K^-)$ fits in bins of $|t|$ for RGA Fall 2018, outbending.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgafall18_outb_fit_mkk_vs_xb.png}
+\caption{$M(K^+K^-)$ fits in bins of $x_B$ for RGA Fall 2018, outbending.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgafall18_outb_fit_mkk_vs_w.png}
+\caption{$M(K^+K^-)$ fits in bins of $W$ for RGA Fall 2018, outbending.}
+\end{figure}
+
+\clearpage
+
+\subsubsection*{RGA Spring 2018, inbending}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgasp18_inb_fit_mkk_vs_q2.png}
+\caption{$M(K^+K^-)$ fits in bins of $Q^2$ for RGA Spring 2018, inbending.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgasp18_inb_fit_mkk_vs_t.png}
+\caption{$M(K^+K^-)$ fits in bins of $|t|$ for RGA Spring 2018, inbending.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgasp18_inb_fit_mkk_vs_xb.png}
+\caption{$M(K^+K^-)$ fits in bins of $x_B$ for RGA Spring 2018, inbending.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgasp18_inb_fit_mkk_vs_w.png}
+\caption{$M(K^+K^-)$ fits in bins of $W$ for RGA Spring 2018, inbending.}
+\end{figure}
+
+\clearpage
+
+\subsubsection*{RGA Spring 2018, outbending}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgasp18_outb_fit_mkk_vs_q2.png}
+\caption{$M(K^+K^-)$ fits in bins of $Q^2$ for RGA Spring 2018, outbending.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgasp18_outb_fit_mkk_vs_t.png}
+\caption{$M(K^+K^-)$ fits in bins of $|t|$ for RGA Spring 2018, outbending.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgasp18_outb_fit_mkk_vs_xb.png}
+\caption{$M(K^+K^-)$ fits in bins of $x_B$ for RGA Spring 2018, outbending.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgasp18_outb_fit_mkk_vs_w.png}
+\caption{$M(K^+K^-)$ fits in bins of $W$ for RGA Spring 2018, outbending.}
+\end{figure}
+
+\clearpage
+
+\subsubsection*{RGA Spring 2019, inbending}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgasp19_inb_fit_mkk_vs_q2.png}
+\caption{$M(K^+K^-)$ fits in bins of $Q^2$ for RGA Spring 2019, inbending.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgasp19_inb_fit_mkk_vs_t.png}
+\caption{$M(K^+K^-)$ fits in bins of $|t|$ for RGA Spring 2019, inbending.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgasp19_inb_fit_mkk_vs_xb.png}
+\caption{$M(K^+K^-)$ fits in bins of $x_B$ for RGA Spring 2019, inbending.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgasp19_inb_fit_mkk_vs_w.png}
+\caption{$M(K^+K^-)$ fits in bins of $W$ for RGA Spring 2019, inbending.}
+\end{figure}
+
+\clearpage
+
+
+%% ==================================================================
+\section{Acceptance Correction}
+\label{sec:acceptance}
+
+The acceptance $\varepsilon_i$ in each kinematic bin $i$ is computed from the
+Monte Carlo as:
+\begin{equation}
+\varepsilon_i = \frac{N_i^{\rm MC,\,accepted}}{N_i^{\rm MC,\,generated}}
+\end{equation}
+where $N_i^{\rm MC,\,generated}$ is the number of generated events in bin $i$
+after kinematic cuts, and $N_i^{\rm MC,\,accepted}$ is the subset that passes
+the NN fast MC acceptance.
+
+The acceptance-corrected yield is:
+\begin{equation}
+N_i^{\rm corr} = \frac{N_i(\phi)}{\varepsilon_i}
+\end{equation}
+where $N_i(\phi)$ is the $\phi$ signal yield from the $M(K^+K^-)$ fit.
+
+\subsection{Acceptance-Corrected Distributions with Model Fits}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgafall18_inb_acceptance_corrected.png}
+\caption{Acceptance-corrected distributions for RGA Fall 2018, inbending. Blue dashed histogram: generation model; red filled histogram: fitted model.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgafall18_outb_acceptance_corrected.png}
+\caption{Acceptance-corrected distributions for RGA Fall 2018, outbending. Blue dashed histogram: generation model; red filled histogram: fitted model.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgasp18_inb_acceptance_corrected.png}
+\caption{Acceptance-corrected distributions for RGA Spring 2018, inbending. Blue dashed histogram: generation model; red filled histogram: fitted model.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgasp18_outb_acceptance_corrected.png}
+\caption{Acceptance-corrected distributions for RGA Spring 2018, outbending. Blue dashed histogram: generation model; red filled histogram: fitted model.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{plots/rgasp19_inb_acceptance_corrected.png}
+\caption{Acceptance-corrected distributions for RGA Spring 2019, inbending. Blue dashed histogram: generation model; red filled histogram: fitted model.}
+\end{figure}
+
+
+\clearpage
+%% ==================================================================
+\section{Model Fit Results}
+\label{sec:fit}
+
+The cross-section model parameters are determined by minimizing:
+\begin{equation}
+\chi^2 = \sum_{\rm var} \sum_{i} \frac{\left(N_i^{\rm corr} - N_i^{\rm model}\right)^2}
+{\left(\delta N_i^{\rm corr}\right)^2}
+\end{equation}
+where the sum runs over the fitted kinematic variables ($Q^2$, $|t|$, $W$)
+and their bins (5 bins each, 15 data points total).
+The variables $x_B$ and $|t|-|t_{\rm min}|$ are not fitted since the model has
+no independent parameters controlling them.
+
+The model prediction $N_i^{\rm model}$ is obtained by reweighting the MC events:
+\begin{equation}
+N_i^{\rm model} = C \sum_{j \in {\rm bin}\,i} \frac{\sigma_{\rm new}(Q^2_j, x_{B,j}, t_j)}
+{\sigma_{\rm gen}(Q^2_j, x_{B,j}, t_j)}
+\end{equation}
+where $\sigma_{\rm gen}$ is the cross section used in generation and $\sigma_{\rm new}$
+uses the trial parameters. The normalization $C$ is determined analytically.
+
+The optimization uses \texttt{scipy.optimize.differential\_evolution} with bounds:
+$\alpha_2 \in [-2, 5]$, $\alpha_3 \in [-15, 15]$, $b_t \in [0.1, 8]$,
+$\nu_T \in [0, 10]$. The parameter $c_R = 1$ is fixed.
+
+\subsection{Results}
+
+\begin{table}[H]
+\centering
+\caption{Fitted model parameters for each dataset. Generation parameters:
+$\alpha_2 = -1.259$, $\alpha_3 = 0.697$, $b_t = 1.313$, $\nu_T = 2.306$.
+$\chi^2$ is for 15 data points (5 bins $\times$ 3 variables) minus 4 free parameters.}
+\begin{tabular}{lccccc}
+\toprule
+Dataset & $\chi^2$/ndf & $\alpha_2$ & $\alpha_3$ & $b_t$ & $\nu_T$ \\
+\midrule
+MC generation & --- & $-1.259$ & $0.697$ & $1.313$ & $2.306$ \\
+\midrule
+Fall18 inb & 14.3/11 & -1.190 & 0.694 & 1.199 & 2.402 \\
+Fall18 outb & 17.9/11 & -1.136 & 0.287 & 1.467 & 2.528 \\
+Sp18 inb & 8.0/11 & -1.342 & 1.439 & 1.274 & 2.167 \\
+Sp18 outb & 10.1/11 & -1.558 & 1.120 & 1.350 & 2.328 \\
+Sp19 inb & 6.2/11 & -0.990 & 0.224 & 1.135 & 2.261 \\
+\midrule
+Average & --- & $-1.243 \pm 0.194$ & $0.753 \pm 0.470$ & $1.285 \pm 0.116$ & $2.337 \pm 0.123$ \\
+Avg (inb) & --- & $-1.174 \pm 0.144$ & $0.786 \pm 0.500$ & $1.202 \pm 0.057$ & $2.277 \pm 0.097$ \\
+Avg (outb) & --- & $-1.347 \pm 0.211$ & $0.704 \pm 0.416$ & $1.409 \pm 0.058$ & $2.428 \pm 0.100$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{$\chi^2$ per kinematic variable (5 bins each). Variables $x_B$ and $|t|-|t_{\rm min}|$
+are not included in the fit but shown for comparison.}
+\begin{tabular}{lccccc}
+\toprule
+Dataset & $Q^2$ & $|t|$ & $W$ & $x_B$ (not fit) & $|t|-|t_{\rm min}|$ (not fit) \\
+\midrule
+Fall18 inb & 4.0 & 8.3 & 2.0 & 29.8 & 76.8 \\
+Fall18 outb & 2.5 & 10.3 & 4.6 & 19.0 & 44.6 \\
+Sp18 inb & 1.8 & 4.5 & 1.4 & 25.7 & 17.0 \\
+Sp18 outb & 4.8 & 1.7 & 3.3 & 2.6 & 12.2 \\
+Sp19 inb & 3.1 & 2.6 & 0.4 & 53.4 & 61.7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Pipeline Fit Plots}
+
+
+\clearpage
+%% ==================================================================
+\section{Summary}
+\label{sec:summary}
+
+The cross-section model for diffractive $\phi$ meson electroproduction has been
+tuned using five CLAS12 datasets with the generation parameters
+$\alpha_2 = -1.259$, $\alpha_3 = 0.697$, $b_t = 1.313$, $\nu_T = 2.306$.
+
+The acceptance-corrected $\phi$ yields, extracted via $M(K^+K^-)$ fits with fixed
+Gaussian parameters ($\mu = 1019.5$~MeV, $\sigma = 4.7$~MeV), are fit using
+reweighting of the Monte Carlo events.
+
+The average fitted parameters across all 5 datasets are:
+\begin{center}
+\begin{tabular}{lc}
+\toprule
+Parameter & Average $\pm$ std \\
+\midrule
+$\alpha_2$ & $-1.243 \pm 0.194$ \\
+$\alpha_3$ & $0.753 \pm 0.470$ \\
+$b_t$       & $1.285 \pm 0.116$ \\
+$\nu_T$    & $2.337 \pm 0.123$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+These values can be used as input for the next iteration of the generator.
+
+\appendix
+\section{Generated Kinematics}
+
+
+\section{MC vs Data Comparison}
+
+
+\section{Acceptance Maps}
+
+
+\end{document}

@@ -1,0 +1,142 @@
+{
+  "dataset": {
+    "name": "rgafall18_outb",
+    "description": "RGA Fall 2018, outbending torus",
+    "data_file": "rgafall18_outb.lund",
+    "model": "rga_fall2018_outb",
+    "ebeam": 10.6,
+    "polarity": "outb"
+  },
+  "generation": {
+    "nev": 5000000,
+    "seed": 778899,
+    "generator": "diffrad_gen_exp",
+    "gen_q2min": 0.5,
+    "gen_q2max": 7.0,
+    "gen_wmin": 1.8,
+    "gen_wmax": 4.0,
+    "gen_tmin": 0.01,
+    "gen_tmax": 6.0,
+    "gen_ymin": 0.25,
+    "gen_ymax": 0.9,
+    "gen_xbmin": 0.05,
+    "gen_xbmax": 0.7,
+    "gen_pemin": 1.8,
+    "gen_pemax": 8.0,
+    "gen_theta_e_min": 6.0,
+    "gen_theta_e_max": 35.0
+  },
+  "cross_section_model": {
+    "formula": "dsig/dt = (1 - W2_th/W2)^alf2 * W^alf3 * (1+Q2/mphi2)^(-nuT) * bt * exp(bt*t) * (1 + cR*Q2/mphi2)",
+    "description": "Exponential t-dependence with threshold factor and sigma_L/sigma_T ratio",
+    "parameters": {
+      "alf2": {
+        "value": -1.259,
+        "description": "Threshold exponent: (1 - W2_th/W2)^alf2"
+      },
+      "alf3": {
+        "value": 0.697,
+        "description": "W power law: W^alf3"
+      },
+      "bt": {
+        "value": 1.313,
+        "description": "t-slope [GeV^-2]: exp(bt * t)"
+      },
+      "nuT": {
+        "value": 2.306,
+        "description": "Q2 suppression: (1 + Q2/mphi2)^(-nuT)"
+      },
+      "cR": {
+        "value": 1.0,
+        "description": "sigma_L/sigma_T ratio: sigma_L = cR * Q2/mphi2 * sigma_T"
+      }
+    }
+  },
+  "fit_parameters": {
+    "free": [
+      "alf2",
+      "alf3",
+      "bt",
+      "nuT"
+    ],
+    "fixed": [
+      "cR"
+    ],
+    "bounds": {
+      "alf2": [
+        -2.0,
+        5.0
+      ],
+      "alf3": [
+        -15.0,
+        15.0
+      ],
+      "bt": [
+        0.1,
+        8.0
+      ],
+      "nuT": [
+        0.0,
+        10.0
+      ]
+    }
+  },
+  "cuts": {
+    "q2min": 1.0,
+    "q2max": 6.0,
+    "wmin": 2.0,
+    "wmax": 4.0,
+    "tmin": 0.0,
+    "tmax": 100.0,
+    "xbmin": 0.0,
+    "xbmax": 1.0,
+    "pemin": 1.8,
+    "pemax": 8.0,
+    "pkmax": 7.5,
+    "theta_e_min": 6.0,
+    "theta_e_max": 35.0
+  },
+  "notes": "Gen params = avg of 5 datasets. 4 free. MKK binning added.",
+  "mkk_bins": {
+    "q2": [
+      1.0,
+      1.8,
+      2.6,
+      3.4,
+      4.2,
+      5.0
+    ],
+    "t": [
+      0.5,
+      1.1,
+      1.7,
+      2.3,
+      2.9,
+      3.5
+    ],
+    "xb": [
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6
+    ],
+    "w": [
+      2.0,
+      2.3,
+      2.6,
+      2.9,
+      3.2,
+      3.5
+    ],
+    "t_tmin": [
+      0.0,
+      0.5,
+      1.0,
+      1.5,
+      2.0,
+      2.5
+    ]
+  }
+}
