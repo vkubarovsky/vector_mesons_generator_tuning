@@ -43,7 +43,7 @@ def compute_tmin(q2, xb):
     pcm_i = np.sqrt(np.maximum(ecm_i**2 - MP2, 0))
     ecm_f = (w2 + MJP2 - MP2) / (2 * w)
     pcm_f = np.sqrt(np.maximum(ecm_f**2 - MJP2, 0))
-    return (ecm_i - ecm_f)**2 - (pcm_i - pcm_f)**2
+    return (pcm_i - pcm_f)**2 - (ecm_i - ecm_f)**2   # |t|_min > 0
 
 
 def step1_generate(cfg, ebeam_str):

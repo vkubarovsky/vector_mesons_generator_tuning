@@ -1561,7 +1561,7 @@
       w2 = amp2 + q2*(1d0-xB)/xB
       if(w2.le.Wth2)then; sigma_T_jpsi = 0d0; return; endif
       w  = sqrt(w2)
-!     kinematic t_min
+!     kinematic |t|_min (positive); t argument is negative
       ecm_i  = (w2 + q2 + amp2)/(2d0*w)
       pcm_i  = sqrt(max(0d0, ecm_i**2 - amp2))
       ecm_f  = (w2 + amjp2 - amp2)/(2d0*w)
@@ -1569,7 +1569,7 @@
       tmin_k = -( (ecm_i - ecm_f)**2 - (pcm_i - pcm_f)**2 )
       cT   = pj_alf1 * (1d0 - Wth2/w2)**pj_alf2 * w**pj_alf3
       sigT = cT / (1d0 + q2/amjp2)**pj_nuT
-      sigma_T_jpsi = sigT * 3d0*(pj_mg2 - tmin_k)**3 / (pj_mg2 - t)**4
+      sigma_T_jpsi = sigT * 3d0*(pj_mg2 + tmin_k)**3 / (pj_mg2 - t)**4
       end
 
 !----------------------------------------------------------------------
@@ -1594,7 +1594,7 @@
       w2 = amp2 + q2*(1d0-xB)/xB
       if(w2.le.Wth2)then; sigma_L_jpsi = 0d0; return; endif
       w  = sqrt(w2)
-!     kinematic t_min
+!     kinematic |t|_min (positive); t argument is negative
       ecm_i  = (w2 + q2 + amp2)/(2d0*w)
       pcm_i  = sqrt(max(0d0, ecm_i**2 - amp2))
       ecm_f  = (w2 + amjp2 - amp2)/(2d0*w)
@@ -1602,7 +1602,7 @@
       tmin_k = -( (ecm_i - ecm_f)**2 - (pcm_i - pcm_f)**2 )
       cT   = pj_alf1 * (1d0 - Wth2/w2)**pj_alf2 * w**pj_alf3
       sigT = cT / (1d0 + q2/amjp2)**pj_nuT
-      dsdt = sigT * 3d0*(pj_mg2 - tmin_k)**3 / (pj_mg2 - t)**4
+      dsdt = sigT * 3d0*(pj_mg2 + tmin_k)**3 / (pj_mg2 - t)**4
       sigma_L_jpsi = pj_cR * (q2/amjp2) * dsdt
       end
 
