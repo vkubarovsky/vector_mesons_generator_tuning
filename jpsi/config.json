@@ -8,7 +8,7 @@
     "data_composition": {"10.6": 52, "10.2": 16}
   },
   "generation": {
-    "generator": "diffrad_jpsi_exp",
+    "generator": "diffrad_jpsi_dipole",
     "ivec": 4,
     "seed": 778899,
     "energies": {

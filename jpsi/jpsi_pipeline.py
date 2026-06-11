@@ -2,7 +2,7 @@
 """
 jpsi_pipeline.py — Generate J/psi MC and run NN fastMC.
 
-  Step 1: Generate MC with diffrad_jpsi_exp (dipole t-form) per beam energy
+  Step 1: Generate MC with diffrad_jpsi_dipole per beam energy
   Step 2: FastMC — per-event acceptance weight = mean accept over the
           fastmc configs of that beam energy (e' in FT, e+/e-/p in FD)
   Output: npz cache per energy + generated-vs-accepted plots
@@ -24,7 +24,7 @@ sys.path.insert(0, str(Path.home() / "fastmc/scripts_jpsi"))
 from fast_mc import load_model_auto
 
 BASE      = Path(__file__).resolve().parent
-GENERATOR = BASE / "diffrad_jpsi_exp.exe"
+GENERATOR = BASE / "diffrad_jpsi_dipole.exe"
 DATA_ROOT = Path.home() / "Downloads/volatile/clas12/vpk/fastmc"
 LUND_ROOT = DATA_ROOT / "jpsi_mc"           # generated LUND files
 CACHE_ROOT = DATA_ROOT / "jpsi_tuning_cache" # npz caches
@@ -47,7 +47,7 @@ def compute_tmin(q2, xb):
 
 
 def step1_generate(cfg, ebeam_str):
-    """Run diffrad_jpsi_exp for one beam energy."""
+    """Run diffrad_jpsi_dipole for one beam energy."""
     gen = cfg["generation"]
     mp = {k: v["value"] for k, v in cfg["cross_section_model"]["parameters"].items()}
     nev = gen["energies"][ebeam_str]["nev"]
