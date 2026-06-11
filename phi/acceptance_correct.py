@@ -49,7 +49,7 @@ def compute_tmin(q2, xb):
     pcm_i = np.sqrt(np.maximum(ecm_i**2 - MP2, 0))
     ecm_f = (w2 + MPHI2 - MP2) / (2 * w)
     pcm_f = np.sqrt(np.maximum(ecm_f**2 - MPHI2, 0))
-    return (ecm_i - ecm_f)**2 - (pcm_i - pcm_f)**2
+    return (pcm_i - pcm_f)**2 - ((q2 + MPHI2) / (2 * w))**2   # |t|_min > 0
 
 
 def sigma_model(q2, xb, t_neg, alf2, alf3, bt, nuT, cR):

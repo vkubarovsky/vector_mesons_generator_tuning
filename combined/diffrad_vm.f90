@@ -221,8 +221,8 @@
 !     Defaults are the TUNED values (June 2026):
 !       phi  (ivec=3, exponential t):  alf2=-1.245 alf3=0.762 nuT=2.344
 !                                      bt=1.284  cR=1.0
-!       jpsi (ivec=4, dipole t):       alf2=4.128  alf3=0.32  nuT=3.0
-!                                      mg2=3.170 cR=0.4
+!       jpsi (ivec=4, dipole t):       alf2=4.122  alf3=0.32  nuT=3.0
+!                                      mg2=3.112 cR=0.4
 !     Table defaults below are the PHI values; for ivec=4 any parameter
 !     not set in the input file is replaced by the J/psi default in code.
       pars(23) = param_t('alf1',  1,1, 400d0,0d0, 0,  0d0, 1d6,  .false.)
@@ -232,7 +232,7 @@
       pars(27) = param_t('bt',    1,1, 1.284d0,0d0,0,  0d0,100d0, .false.)
       pars(28) = param_t('cR',    1,1, 1.000d0,0d0,0,  0d0, 50d0, .false.)
 !     --- J/psi only: dipole mass^2 (tuned 2026-06) ---
-      pars(29) = param_t('mg2',   1,1, 3.170d0,0d0,0, 0.1d0,100d0, .false.)
+      pars(29) = param_t('mg2',   1,1, 3.112d0,0d0,0, 0.1d0,100d0, .false.)
 
 !     Read, validate, print
       call read_input(trim(input_file), pars, npars)
@@ -327,7 +327,7 @@
 !     --- J/psi model parameters: input value if set, else tuned default ---
       pj_alf1 = 400.d0
       if(pars(23)%is_set) pj_alf1 = pars(23)%rval
-      pj_alf2 = 4.128d0
+      pj_alf2 = 4.122d0
       if(pars(24)%is_set) pj_alf2 = pars(24)%rval
       pj_alf3 = 0.320d0
       if(pars(25)%is_set) pj_alf3 = pars(25)%rval
@@ -1598,7 +1598,11 @@
       pcm_i  = sqrt(max(0d0, ecm_i**2 - amp2))
       ecm_f  = (w2 + amjp2 - amp2)/(2d0*w)
       pcm_f  = sqrt(max(0d0, ecm_f**2 - amjp2))
-      tmin_k = -( (ecm_i - ecm_f)**2 - (pcm_i - pcm_f)**2 )
+      tmin_k = (pcm_i - pcm_f)**2 - ( (q2 + amjp2)/(2d0*w) )**2
+      tmax_k = (pcm_i + pcm_f)**2 - ( (q2 + amjp2)/(2d0*w) )**2
+      if(-t.lt.tmin_k .or. -t.gt.tmax_k)then
+        sigma_T_jpsi = 0d0; return
+      endif
       cT   = pj_alf1 * (1d0 - Wth2/w2)**pj_alf2 * w**pj_alf3
       sigT = cT / (1d0 + q2/amjp2)**pj_nuT
       sigma_T_jpsi = sigT * 3d0*(pj_mg2 + tmin_k)**3 / (pj_mg2 - t)**4
@@ -1631,7 +1635,11 @@
       pcm_i  = sqrt(max(0d0, ecm_i**2 - amp2))
       ecm_f  = (w2 + amjp2 - amp2)/(2d0*w)
       pcm_f  = sqrt(max(0d0, ecm_f**2 - amjp2))
-      tmin_k = -( (ecm_i - ecm_f)**2 - (pcm_i - pcm_f)**2 )
+      tmin_k = (pcm_i - pcm_f)**2 - ( (q2 + amjp2)/(2d0*w) )**2
+      tmax_k = (pcm_i + pcm_f)**2 - ( (q2 + amjp2)/(2d0*w) )**2
+      if(-t.lt.tmin_k .or. -t.gt.tmax_k)then
+        sigma_L_jpsi = 0d0; return
+      endif
       cT   = pj_alf1 * (1d0 - Wth2/w2)**pj_alf2 * w**pj_alf3
       sigT = cT / (1d0 + q2/amjp2)**pj_nuT
       dsdt = sigT * 3d0*(pj_mg2 + tmin_k)**3 / (pj_mg2 - t)**4

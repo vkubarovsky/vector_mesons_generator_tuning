@@ -218,10 +218,10 @@
 !               * 3*(mg2-tmin)^3/(mg2-t)^4          (dipole t-form)
 !     sigma_L = cR * Q2/m2jp * sigma_T
       pars(23) = param_t('alf1',  1,1, 400d0,0d0, 0,  0d0, 1d6,  .false.)
-      pars(24) = param_t('alf2',  1,1, 4.128d0,0d0,0, -50d0, 50d0, .false.)
+      pars(24) = param_t('alf2',  1,1, 4.122d0,0d0,0, -50d0, 50d0, .false.)
       pars(25) = param_t('alf3',  1,1, 0.320d0,0d0,0, -50d0, 50d0, .false.)
       pars(26) = param_t('nuT',   1,1, 3.000d0,0d0,0,  0d0, 50d0, .false.)
-      pars(27) = param_t('mg2',   1,1, 3.170d0,0d0,0, 0.1d0,100d0, .false.)
+      pars(27) = param_t('mg2',   1,1, 3.112d0,0d0,0, 0.1d0,100d0, .false.)
       pars(28) = param_t('cR',    1,1, 0.400d0,0d0,0,  0d0, 50d0, .false.)
 
 !     Read, validate, print
@@ -1566,7 +1566,11 @@
       pcm_i  = sqrt(max(0d0, ecm_i**2 - amp2))
       ecm_f  = (w2 + amjp2 - amp2)/(2d0*w)
       pcm_f  = sqrt(max(0d0, ecm_f**2 - amjp2))
-      tmin_k = -( (ecm_i - ecm_f)**2 - (pcm_i - pcm_f)**2 )
+      tmin_k = (pcm_i - pcm_f)**2 - ( (q2 + amjp2)/(2d0*w) )**2
+      tmax_k = (pcm_i + pcm_f)**2 - ( (q2 + amjp2)/(2d0*w) )**2
+      if(-t.lt.tmin_k .or. -t.gt.tmax_k)then
+        sigma_T_jpsi = 0d0; return
+      endif
       cT   = pj_alf1 * (1d0 - Wth2/w2)**pj_alf2 * w**pj_alf3
       sigT = cT / (1d0 + q2/amjp2)**pj_nuT
       sigma_T_jpsi = sigT * 3d0*(pj_mg2 + tmin_k)**3 / (pj_mg2 - t)**4
@@ -1599,7 +1603,11 @@
       pcm_i  = sqrt(max(0d0, ecm_i**2 - amp2))
       ecm_f  = (w2 + amjp2 - amp2)/(2d0*w)
       pcm_f  = sqrt(max(0d0, ecm_f**2 - amjp2))
-      tmin_k = -( (ecm_i - ecm_f)**2 - (pcm_i - pcm_f)**2 )
+      tmin_k = (pcm_i - pcm_f)**2 - ( (q2 + amjp2)/(2d0*w) )**2
+      tmax_k = (pcm_i + pcm_f)**2 - ( (q2 + amjp2)/(2d0*w) )**2
+      if(-t.lt.tmin_k .or. -t.gt.tmax_k)then
+        sigma_L_jpsi = 0d0; return
+      endif
       cT   = pj_alf1 * (1d0 - Wth2/w2)**pj_alf2 * w**pj_alf3
       sigT = cT / (1d0 + q2/amjp2)**pj_nuT
       dsdt = sigT * 3d0*(pj_mg2 + tmin_k)**3 / (pj_mg2 - t)**4

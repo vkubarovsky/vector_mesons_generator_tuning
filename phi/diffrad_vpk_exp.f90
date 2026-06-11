@@ -1567,7 +1567,11 @@
       pcm_i  = sqrt(max(0d0, ecm_i**2 - amp2))
       ecm_f  = (w2 + amjp2 - amp2)/(2d0*w)
       pcm_f  = sqrt(max(0d0, ecm_f**2 - amjp2))
-      tmin_k = -( (ecm_i - ecm_f)**2 - (pcm_i - pcm_f)**2 )
+      tmin_k = (pcm_i - pcm_f)**2 - ( (q2 + amjp2)/(2d0*w) )**2
+      tmax_k = (pcm_i + pcm_f)**2 - ( (q2 + amjp2)/(2d0*w) )**2
+      if(-t.lt.tmin_k .or. -t.gt.tmax_k)then
+        sigma_T_jpsi = 0d0; return
+      endif
       cT   = alf1 * (1d0 - Wth2/w2)**alf2 * w**alf3
       sigT = cT / (1d0 + q2/amjp2)**nuT
       sigma_T_jpsi = sigT * 3d0*(mg2 + tmin_k)**3 / (mg2 - t)**4
@@ -1603,7 +1607,11 @@
       pcm_i  = sqrt(max(0d0, ecm_i**2 - amp2))
       ecm_f  = (w2 + amjp2 - amp2)/(2d0*w)
       pcm_f  = sqrt(max(0d0, ecm_f**2 - amjp2))
-      tmin_k = -( (ecm_i - ecm_f)**2 - (pcm_i - pcm_f)**2 )
+      tmin_k = (pcm_i - pcm_f)**2 - ( (q2 + amjp2)/(2d0*w) )**2
+      tmax_k = (pcm_i + pcm_f)**2 - ( (q2 + amjp2)/(2d0*w) )**2
+      if(-t.lt.tmin_k .or. -t.gt.tmax_k)then
+        sigma_L_jpsi = 0d0; return
+      endif
       cT   = alf1 * (1d0 - Wth2/w2)**alf2 * w**alf3
       sigT = cT / (1d0 + q2/amjp2)**nuT
       dsdt = sigT * 3d0*(mg2 + tmin_k)**3 / (mg2 - t)**4
