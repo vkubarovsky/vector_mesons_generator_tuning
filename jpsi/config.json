@@ -1,0 +1,71 @@
+{
+  "channel": {
+    "name": "jpsi",
+    "reaction": "ep -> e' p J/psi, J/psi -> e+ e-",
+    "electron": "Forward Tagger (theta 0-7 deg)",
+    "data_file": "/Users/vpk/OneDrive/Work/2026_DIFFRAD/MC_vector_mesons/jpsi/Mariana_All_top2_jpsi.lund",
+    "data_events": 68,
+    "data_composition": {"10.6": 52, "10.2": 16}
+  },
+  "generation": {
+    "generator": "diffrad_jpsi_exp",
+    "ivec": 4,
+    "seed": 778899,
+    "energies": {
+      "10.6": {
+        "nev": 5000000,
+        "fastmc_configs": ["F18in_45nA", "F18in_50nA", "F18in_55nA",
+                           "F18out_40nA", "F18out_50nA",
+                           "S18in_35nA", "S18in_50nA", "S18out_45nA"]
+      },
+      "10.2": {
+        "nev": 2000000,
+        "fastmc_configs": ["S19in_50nA"]
+      }
+    },
+    "gen_q2min": 0.01,  "gen_q2max": 0.12,
+    "gen_wmin": 4.05,   "gen_wmax": 4.55,
+    "gen_tmin": 0.0,    "gen_tmax": 6.0,
+    "gen_xbmin": 0.0005,"gen_xbmax": 0.01,
+    "gen_ymin": 0.5,    "gen_ymax": 0.999,
+    "gen_theta_e_min": 0.0, "gen_theta_e_max": 7.5,
+    "tslope": 1.3
+  },
+  "cross_section_model": {
+    "formula": "dsig/dt = alf1*(1-W2th/W2)^alf2 * W^alf3 / (1+Q2/m2jp)^nuT * 3*(mg2-tmin)^3/(mg2-t)^4 * (1+cR*Q2/m2jp)",
+    "t_form": "dipole",
+    "parameters": {
+      "alf1": {"value": 400.0, "description": "Overall normalization [nb]"},
+      "alf2": {"value": 1.0,   "description": "Threshold exponent: (1-W2th/W2)^alf2"},
+      "alf3": {"value": 0.32,  "description": "W power law: W^alf3"},
+      "nuT":  {"value": 3.0,   "description": "Q2 suppression: (1+Q2/m2jp)^(-nuT)"},
+      "mg2":  {"value": 1.6,   "description": "Dipole mass^2 [GeV^2]: (mg2-t)^-4"},
+      "cR":   {"value": 0.4,   "description": "sigma_L/sigma_T: cR*Q2/m2jp"}
+    }
+  },
+  "fit_parameters": {
+    "free": ["alf2", "mg2"],
+    "fixed": ["alf1", "alf3", "nuT", "cR"],
+    "bounds": {
+      "alf2": [-3.0, 5.0],
+      "alf3": [-15.0, 15.0],
+      "mg2":  [0.3, 6.0],
+      "nuT":  [0.0, 10.0]
+    }
+  },
+  "cuts": {
+    "q2min": 0.015, "q2max": 0.1,
+    "wmin": 4.15,   "wmax": 4.5,
+    "tmax": 3.0,
+    "theta_ft_min": 2.5, "theta_ft_max": 6.0,
+    "mee_min": 2.9, "mee_max": 3.25
+  },
+  "bins": {
+    "q2": [0.015, 0.043, 0.071, 0.1],
+    "w":  [4.15, 4.267, 4.383, 4.5],
+    "t":  [0.5, 1.125, 1.75, 2.375, 3.0],
+    "t_tmin": [0.0, 0.75, 1.5, 2.25, 3.0],
+    "xb": [0.0, 0.00125, 0.0025, 0.00375, 0.005]
+  },
+  "notes": "68 data events (52 @ 10.6, 16 @ 10.2 GeV). Pre-selected J/psi candidates, M(ee) in [2.93,3.17] - counting, no mass fit. Acceptance: per-event average over fastmc_configs of the event's beam energy; energies combined 52:16. Start fitting only alf2+mg2; alf3/nuT fixed (Q2 lever arm tiny in FT regime)."
+}
