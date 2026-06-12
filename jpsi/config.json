@@ -18,14 +18,7 @@
    "10.6": {
     "nev": 5000000,
     "fastmc_configs": [
-     "F18in_45nA",
-     "F18in_50nA",
-     "F18in_55nA",
-     "F18out_40nA",
-     "F18out_50nA",
-     "S18in_35nA",
-     "S18in_50nA",
-     "S18out_45nA"
+     "F18in_45nA"
     ]
    },
    "10.2": {
@@ -58,7 +51,7 @@
     "description": "Overall normalization [nb]"
    },
    "alf2": {
-    "value": 4.105,
+    "value": 4.2343,
     "description": "Threshold exponent: (1-W2th/W2)^alf2"
    },
    "alf3": {
@@ -70,7 +63,7 @@
     "description": "Q2 suppression: (1+Q2/m2jp)^(-nuT)"
    },
    "mg2": {
-    "value": 3.106,
+    "value": 4.0645,
     "description": "Dipole mass^2 [GeV^2]: (mg2-t)^-4"
    },
    "cR": {
@@ -155,5 +148,5 @@
    0.005
   ]
  },
- "notes": "68 data events (52 @ 10.6, 16 @ 10.2 GeV). Pre-selected J/psi candidates, M(ee) in [2.93,3.17] - counting, no mass fit. Acceptance: per-event average over fastmc_configs of the event's beam energy; energies combined 52:16. Start fitting only alf2+mg2; alf3/nuT fixed (Q2 lever arm tiny in FT regime)."
+ "notes": "68 data events (52 @ 10.6, 16 @ 10.2 GeV). Pre-selected J/psi candidates, M(ee) in [2.93,3.17] - counting, no mass fit. Acceptance (retune 2026-06-12): SINGLE fastmc per energy - F18in_45nA for 10.6 (sample ~84% inbending per Mariana's per-period yields; F18out has no J/psi signal in top2; polarity not recorded per event in the data lund), S19in_50nA for 10.2 (S19 was inbending-only). Energies combined 52:16 in one joint fit. Fitting only alf2+mg2; alf3/nuT fixed (Q2 lever arm tiny in FT regime). Data splits: Mariana_top2_jpsi_10.6.lund / _10.2.lund alongside the combined file."
 }

@@ -24,7 +24,7 @@ sys.path.insert(0, str(Path.home() / "fastmc/scripts_jpsi"))
 from fast_mc import load_model_auto
 
 BASE      = Path(__file__).resolve().parent
-GENERATOR = BASE / "diffrad_jpsi_dipole.exe"
+GENERATOR = BASE / "diffrad_vm.exe"   # one-program policy: production diffrad_vm
 DATA_ROOT = Path.home() / "Downloads/volatile/clas12/vpk/fastmc"
 LUND_ROOT = DATA_ROOT / "jpsi_mc"           # generated LUND files
 CACHE_ROOT = DATA_ROOT / "jpsi_tuning_cache" # npz caches

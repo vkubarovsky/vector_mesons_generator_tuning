@@ -13,9 +13,11 @@ BASE = Path(__file__).resolve().parent
 TEX_DIR = BASE / "tex"
 
 # iteration history (gen -> fit); the last row is filled from jpsi_results.json
+# Retune 2026-06-12: single-fastMC acceptance (F18in_45nA @10.6, S19in_50nA @10.2),
+# generator diffrad_vm. Iter 1 reused the previous campaign's MC (gen at 4.105/3.106)
+# with recomputed F18in_45nA-only weights.
 ITER_HISTORY = [
-    {"it": 1, "gen": (1.000, 1.600), "fit": (3.719, 3.144), "chi2": 24.1},
-    {"it": 2, "gen": (3.719, 3.144), "fit": (4.048, 3.152), "chi2": 17.9},
+    {"it": 1, "gen": (4.105, 3.106), "fit": (4.234, 4.065), "chi2": 20.4},
 ]
 
 
@@ -104,12 +106,14 @@ $m_g^2$ (dipole $t$-slope).
 %% ==================================================================
 \section{Monte Carlo Generator}
 
-\texttt{diffrad\_jpsi\_dipole.f90} (DIFFRAD family, one particle = one
-generator). All model parameters ($\alpha_1,\alpha_2,\alpha_3,\nu_T,m_g^2,c_R$)
+\texttt{diffrad\_vm.f90} --- the combined all-meson production generator
+(one-program policy; it supersedes the per-meson
+\texttt{diffrad\_jpsi\_dipole.f90}, which is kept as frozen reference).
+All model parameters ($\alpha_1,\alpha_2,\alpha_3,\nu_T,m_g^2,c_R$)
 are read from the input file. The accept--reject proposal uses the same dipole
 shape, so the sampling efficiency tracks $m_g^2$ automatically.
 
-Two bugs were found and fixed during this work:
+Two bugs were found and fixed during the original tuning campaign:
 \begin{itemize}
 \item \textbf{Dipole normalization sign}: the code evaluated
 $(m_g^2 - |t_{\rm min}|)^3$ instead of $(m_g^2 + |t_{\rm min}|)^3$.
@@ -143,11 +147,17 @@ $W \\in [{cfg['cuts']['wmin']}, {cfg['cuts']['wmax']}]$, $|t| < {cfg['cuts']['tm
 
 NN models (acceptance + smearing) trained per particle and per run
 configuration: $e^-$ (FT, no vertex measurement, $v_z$ fixed at $-3$~cm),
-decay $e^-$, $e^+$, $p$. The 10.6 GeV MC is evaluated against all
-{nconf106} run configurations (F18 in/out, S18 in/out at their beam
-currents); each event's acceptance weight is the fraction of configurations
-that accept it. The 10.2 GeV MC uses S19in. The two beam energies are then
-combined so that the \\emph{{accepted}} MC matches the data composition 52:16.
+decay $e^-$, $e^+$, $p$. A \\emph{{single}} fastMC configuration is used per
+beam energy: \\textbf{{F18in\\_45nA}} for the 10.6 GeV MC and
+\\textbf{{S19in\\_50nA}} for the 10.2 GeV MC. Rationale: the data LUND file
+records the beam energy per event but not the torus polarity; by Mariana's
+per-period yields in the $e'e^+e^-p$ topology the 10.6 GeV sample is
+$\\approx 84\\%$ inbending ($N_{{J/\\psi}}$: F18in $16.0\\pm9.3$, S18in
+$14.5\\pm5.5$, S18out $5.9\\pm5.0$, F18out consistent with zero), and the
+10.2 GeV running (S19) was inbending only. A multi-configuration average
+with equal weights would mis-weight periods that contributed few or no
+events. The two beam energies are combined so that the \\emph{{accepted}}
+MC matches the data composition 52:16.
 
 \\begin{{figure}}[H]
 \\centering
@@ -165,8 +175,11 @@ $\\sigma_{{\\rm new}}/\\sigma_{{\\rm gen}}$, free parameters $\\alpha_2$ and $m_
 
 \\begin{{table}}[H]
 \\centering
-\\caption{{Tuning iterations. Starting values $\\alpha_2=1.0$, $m_g^2=1.6$
-(Bhawani/lAger).}}
+\\caption{{Retune iterations (single-fastMC acceptance, 2026-06-12).
+Starting point: the previous multi-configuration tune
+$\\alpha_2=4.105$, $m_g^2=3.106$; iteration 1 reuses that campaign's MC
+with F18in\\_45nA-only acceptance weights, iteration 2 regenerates with
+\\texttt{{diffrad\\_vm}} at the iteration-1 fit.}}
 \\begin{{tabular}}{{ccccccc}}
 \\toprule
 Iter & $\\alpha_2^{{\\rm gen}}$ & $m_g^{{2,\\rm gen}}$ &
