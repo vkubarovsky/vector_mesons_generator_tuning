@@ -5,15 +5,31 @@ exclusive vector meson electroproduction at CLAS12, using neural-network
 fast simulation ([clas12-fastmc](https://github.com/vkubarovsky/clas12-fastmc))
 for detector acceptance.
 
-Each meson is a **fully independent package** — one particle, one generator,
-one tuning chain. Code is deliberately duplicated rather than shared, so a
-converged analysis can never be broken by work on another channel.
+> **One-program policy (since 2026-06-12).** The supported generator is
+> `diffrad_vm.f90` in [MC_vector_mesons](https://github.com/vkubarovsky/MC_vector_mesons)
+> — one repository, one Fortran source, all bug fixes included
+> (tmin_k energy pairing, dipole normalization sign, 64-bit counters,
+> sig_hard_fix RC scheme). **Any new or repeated tuning starts from that
+> file.**
+>
+> The generators that produced the June 2026 results stay here as frozen
+> reference — do not edit them, do not start new work from them:
+> `phi/diffrad_vpk_exp.f90` and `jpsi/diffrad_jpsi_dipole.f90`.
+> The combined version as of the tuning is in git history:
+> `git show 16083a9:combined/diffrad_vm.f90`.
+
+## Status (2026-06-12)
 
 ```
 phi/      ep -> e' p phi,   phi  -> K+ K-     (FD electron)   — COMPLETE
-jpsi/     ep -> e' p J/psi, J/psi-> e+ e-     (FT electron)   — in progress
+jpsi/     ep -> e' p J/psi, J/psi-> e+ e-     (FT electron)   — tuned (alf2=4.122, mg2=3.112); RC study done (see jpsi/rc_test/SUMMARY.md)
 rho/      ep -> e' p rho,   rho  -> pi+ pi-                   — planned
 ```
+
+The tuned parameter sets for both channels are compiled into
+`MC_vector_mesons/diffrad_vm.f90` as defaults, overridable via the
+generator input file (keys: `alf1 alf2 alf3 nuT cR`, `bt` for phi,
+`mg2` for J/psi).
 
 ## phi — final tuned parameters (June 2026)
 
@@ -29,9 +45,21 @@ dsigma/dt = alf1 * (1 - W_th^2/W^2)^alf2 * W^alf3 * (1 + Q^2/m_phi^2)^(-nuT)
 | cR   |  1.0 (fixed)    | sigma_L/sigma_T coefficient |
 
 Average over 5 CLAS12 RGA datasets (Fall18 inb/outb, Spring18 inb/outb,
-Spring19 inb); errors are the dataset-to-dataset spread. These values are
-compiled into `phi/diffrad_vpk_exp.f90` as defaults and can be overridden
-via the generator input file (keys: alf1 alf2 alf3 nuT bt cR).
+Spring19 inb); errors are the dataset-to-dataset spread.
+
+## J/psi — tuned parameters (June 2026, dipole t-form)
+
+| Parameter | Value | Meaning |
+|---|---|---|
+| alf2 | 4.122 | threshold exponent |
+| alf3 | 0.32 (fixed) | W power law |
+| nuT  | 3.0 (fixed) | Q^2 suppression |
+| mg2  | 3.112 | dipole mass^2 [GeV^2] |
+| cR   | 0.4 (fixed) | sigma_L/sigma_T coefficient |
+
+Tuned against Mariana's 68-event FT skim; see `jpsi/tex/jpsi_tuning_report.pdf`.
+RC self-consistency test: eta_total = 0.9273 +- 0.0093 (-7.3% correction),
+details in `jpsi/rc_test/SUMMARY.md`.
 
 ## External dependencies (not in this repo)
 
@@ -43,11 +71,13 @@ via the generator input file (keys: alf1 alf2 alf3 nuT bt cR).
 | jpsi data | `Mariana_All_top2_jpsi.lund` (68 events) | Mariana |
 | Generated MC | `~/Downloads/volatile/clas12/vpk/fastmc/<meson>/<config>/...` | produced by the chain |
 
-## Running the phi chain
+## Running the tuning chain (e.g. phi)
 
 ```bash
+# get the current production generator
+cp ~/MC_vector_mesons/diffrad_vm.f90 phi/
 cd phi
-gfortran -O2 -o diffrad_gen_exp.exe diffrad_vpk_exp.f90
+gfortran -O2 -o diffrad_gen_exp.exe diffrad_vm.f90
 export KMP_DUPLICATE_LIB_OK=TRUE OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1
 python3 run_full_chain.py        # generate -> fastMC -> M(KK) fits -> acceptance fit -> LaTeX report
 ```

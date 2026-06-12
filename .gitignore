@@ -23,3 +23,7 @@ __pycache__/
 
 # Per-run plots are large; the final report PDF carries them
 **/runs/*/*.png
+
+# Scratch/experiment dirs (conclusions recorded in SUMMARY.md / READMEs)
+jpsi/rc_test/
+combined/validation/
