@@ -1,9 +1,11 @@
 # diffrad_vm — combined vector meson generator
 
-> **FROZEN (2026-06-12).** This copy is the record of the tuning result.
-> The supported production version lives in
+> **The code has moved (2026-06-12).** `diffrad_vm.f90` now lives only in
 > [MC_vector_mesons](https://github.com/vkubarovsky/MC_vector_mesons) —
-> all further development happens there.
+> one repository, one supported copy. The exact version produced by the
+> tuning is preserved in this repo's git history
+> (`git show 16083a9:combined/diffrad_vm.f90`). The tuned parameters are
+> recorded in the table below.
 
 One executable for both tuned channels (June 2026):
 
