@@ -517,17 +517,33 @@
 
 !       Exact hard cross section via qqt (integrates podinl)
 !       Only needed for RC run; skip for Born-only to avoid slow integration
+!
+!       sig_hard_fix scheme:
+!        - sig_total (the RATE) keeps the validated Bardin-Shumeiko form
+!          sig_soft + sig_F with the SIGNED finite remainder sig_F
+!          (no clamp -> removes the O(0.1%) clamp bias).
+!        - The hard-event SAMPLING cross section is the physical
+!          sigma_hard(v>vcut) = sig_F + sib*(alpha/pi)(dlm-1)ln(vmax^2/vcut^2)
+!          (the analytic soft-kernel integral over [vcut,vmax] added back).
+!          Positive by construction up to O(alpha^2); clamped as numerical
+!          safety. vcut_ir = 1d-2 GeV^2 (omega ~ 5 MeV) chosen at the
+!          detector-insensitivity scale; must match vcut_use below.
         if(iborn.eq.0) then
           phidif = phirad
           call difflt(q2,w2,tdif,sigmal0,sigmat0)
           call qqt(sig_hard_exact)
-!         Scale to Diehl convention: sig_hard_Diehl = rconv * sig_hard_Akushevich
-          sig_hard = rconv * max(0d0, sig_hard_exact)
+!         Scale to Diehl convention: rconv * Akushevich
+          sig_F = rconv * sig_hard_exact
+          vcut_ir = 1d-2
+          ana_soft = sib*alpha/pi*(dlm-1d0)*log(vmax**2/vcut_ir**2)
+          sig_hard = max(0d0, sig_F + ana_soft)
+          sig_total = sig_soft + sig_F
         else
           sig_hard = 0d0
+          sig_total = sig_soft
         endif
-        sig_total = sig_soft + sig_hard
         if(sig_total.le.0d0)then; nf_sigtot=nf_sigtot+1; goto 100; endif
+        sig_hard = min(sig_hard, sig_total)
 
         sg_born_full = sg_born * sib
         if(sg_born_full.le.0d0)then
@@ -614,15 +630,18 @@
 !         HARD RADIATED EVENT
           nhard = nhard + 1
 
-!         Sample v by accept/reject weighted by podinl (Bug #2 fix)
-          vcut_use = 1d-4
+!         Sample v from the collinear soft kernel (1/v) weighted by
+!         the Born suppression at shifted W'^2 = W^2 - v (sig_hard_fix:
+!         replaces podinl-based sampling; podinl is the IR-subtracted
+!         remainder, not a sampling density). vcut_use = vcut_ir.
+          vcut_use = 1d-2
           rvlogmin = log(vcut_use)
           rvlogmax = log(vmax)
           if(rvlogmax.le.rvlogmin)then
             nf_born=nf_born+1
             goto 100
           endif
-          call sample_vrad(vcut_use,vmax,tamin,tamax,phidif,iy,vrad, &
+          call sample_v_soft(vcut_use,vmax,q2,w2,tdif,iy,vrad, &
                            iok_vrad)
           if(iok_vrad.eq.0)then
             nf_born=nf_born+1
@@ -1823,6 +1842,35 @@
         enddo
       enddo
       podinl=podinl/factor
+      end
+
+!--------------------------------------------------------------
+!  sample_v_soft (sig_hard_fix): sample v from the collinear soft
+!  kernel dN/dv ~ (1/v) * R(v), R(v) = sigma(W^2-v)/sigma(W^2) the
+!  Born threshold suppression at the radiatively shifted W'.
+!  Log-uniform proposal in [vmin,vmax]; accept with prob R(v)<=Rmax.
+!--------------------------------------------------------------
+      subroutine sample_v_soft(vmin_in,vmax_in,q2_in,w2_in,t_in, &
+                               iy,vrad_out,iok)
+      implicit real*8(a-h,o-z)
+      real*4 urand
+      integer*4 iy
+      call difflt(q2_in,w2_in,t_in,sl0,st0)
+      den = st0 + sl0
+      if(den.le.0d0)then; iok=0; return; endif
+      rvlogmin = log(vmin_in)
+      rvlogmax = log(vmax_in)
+      do itry=1,1000
+        vv = exp(rvlogmin + (rvlogmax-rvlogmin)*dble(urand(iy)))
+        call difflt(q2_in,w2_in-vv,t_in,sl,st)
+        ratio = (st+sl)/den
+        if(dble(urand(iy)).lt.ratio)then
+          vrad_out = vv
+          iok = 1
+          return
+        endif
+      enddo
+      iok = 0
       end
 
 !--------------------------------------------------------------

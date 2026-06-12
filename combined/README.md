@@ -1,5 +1,10 @@
 # diffrad_vm — combined vector meson generator
 
+> **FROZEN (2026-06-12).** This copy is the record of the tuning result.
+> The supported production version lives in
+> [MC_vector_mesons](https://github.com/vkubarovsky/MC_vector_mesons) —
+> all further development happens there.
+
 One executable for both tuned channels (June 2026):
 
 | ivec | Meson | t-form | Tuned defaults |
