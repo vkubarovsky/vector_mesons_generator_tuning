@@ -12,7 +12,7 @@ One executable for both tuned channels (June 2026):
 | ivec | Meson | t-form | Tuned defaults |
 |---|---|---|---|
 | 3 | phi -> K+K- | exponential `bt*exp(bt*t)` | alf2=-1.245, alf3=0.762, nuT=2.344, bt=1.284, cR=1.0 |
-| 4 | J/psi -> e+e- | dipole `3(mg2-tmin)^3/(mg2-t)^4` | alf2=4.128, alf3=0.32, nuT=3.0, mg2=3.170, cR=0.4 |
+| 4 | J/psi -> e+e- | dipole `3(mg2-tmin)^3/(mg2-t)^4` | alf2=4.122, alf3=0.32, nuT=3.0, mg2=3.112, cR=0.4 |
 
 Build:
 ```bash
