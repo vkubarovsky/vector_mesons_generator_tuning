@@ -411,6 +411,8 @@ def process_dataset(dataset):
     print(f"\n  Fitting: free={free_params}")
     x0 = [mp[n] for n in free_params]
     bounds_list = [tuple(bounds_dict[n]) for n in free_params]
+    # clip x0 into bounds (gen value may lie outside tightened bounds)
+    x0 = [min(max(v, lo), hi) for v, (lo, hi) in zip(x0, bounds_list)]
 
     t0 = time.time()
     res = differential_evolution(total_chi2, bounds_list,
