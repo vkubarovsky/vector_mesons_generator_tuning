@@ -8,7 +8,7 @@
     "polarity": "inb"
   },
   "generation": {
-    "nev": 10000000,
+    "nev": 2000000,
     "seed": 778899,
     "generator": "diffrad_gen_exp",
     "gen_q2min": 0.5,
@@ -31,11 +31,11 @@
     "description": "Exponential t-dependence with threshold factor and sigma_L/sigma_T ratio",
     "parameters": {
       "alf2": {
-        "value": -1.259,
+        "value": 2.0,
         "description": "Threshold exponent: (1 - W2_th/W2)^alf2"
       },
       "alf3": {
-        "value": 0.697,
+        "value": 0.2,
         "description": "W power law: W^alf3"
       },
       "bt": {
@@ -54,12 +54,12 @@
   },
   "fit_parameters": {
     "free": [
-      "alf2",
-      "alf3",
       "bt",
       "nuT"
     ],
     "fixed": [
+      "alf2",
+      "alf3",
       "cR"
     ],
     "bounds": {
