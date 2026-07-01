@@ -39,11 +39,11 @@
         "description": "W power law: W^alf3"
       },
       "bt": {
-        "value": 1.313,
+        "value": 1.3207424336176994,
         "description": "t-slope [GeV^-2]: exp(bt * t)"
       },
       "nuT": {
-        "value": 2.306,
+        "value": 2.2371963808967936,
         "description": "Q2 suppression: (1 + Q2/mphi2)^(-nuT)"
       },
       "cR": {

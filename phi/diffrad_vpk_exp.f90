@@ -215,10 +215,10 @@
       pars(22) = param_t('theta_hminus',     1,2, 0d0,180d0,0, 0d0, 180d0, .false.)
 !     --- phi cross-section model parameters (optional, have defaults) ---
       pars(23) = param_t('alf1',  1,1, 400d0,0d0, 0,  0d0, 1d6,  .false.)
-      pars(24) = param_t('alf2',  1,1,-1.245d0,0d0,0, -50d0, 50d0, .false.)
-      pars(25) = param_t('alf3',  1,1, 0.762d0,0d0,0, -50d0, 50d0, .false.)
-      pars(26) = param_t('nuT',   1,1, 2.344d0,0d0,0,  0d0, 50d0, .false.)
-      pars(27) = param_t('bt',    1,1, 1.284d0,0d0,0,  0d0,100d0, .false.)
+      pars(24) = param_t('alf2',  1,1, 2.000d0,0d0,0, -50d0, 50d0, .false.)
+      pars(25) = param_t('alf3',  1,1, 0.200d0,0d0,0, -50d0, 50d0, .false.)
+      pars(26) = param_t('nuT',   1,1, 2.253d0,0d0,0,  0d0, 50d0, .false.)
+      pars(27) = param_t('bt',    1,1, 1.326d0,0d0,0,  0d0,100d0, .false.)
       pars(28) = param_t('cR',    1,1, 1.000d0,0d0,0,  0d0, 50d0, .false.)
 
 !     Read, validate, print
